@@ -5,15 +5,12 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enable parsing of JSON bodies
 app.use(express.json());
 
-// Updated API endpoint to reflect the correct usage pattern
 const ANAKIN_API_ENDPOINT = `https://api.anakin.ai/v1/chatbots/${process.env.APP_ID}/messages`;
 
 app.post('/message', async (req, res) => {
-    // Extract 'content' from the request body
-    console.log(req.body); // Log the request body for debugging
+    console.log(req.body);
 
     const { content } = req.body;
 
@@ -35,27 +32,21 @@ app.post('/message', async (req, res) => {
             }
         });
 
-        // Assuming response.data contains the streamed events as a single string
         const eventData = response.data;
 
-        // Split the response into individual lines/events
         const events = eventData.split('\n');
 
-        // Filter out non-message events and extract content
         const messageEvents = events.filter(line => line.startsWith('event: thread.message.delta').map(line => {
-            // Extract JSON part after "data: "
             const jsonPart = line.split('data: ')[1];
             try {
-                // Parse the JSON part to get content
                 const { content } = JSON.parse(jsonPart);
                 return content;
             } catch (e) {
                 console.error('Error parsing event:', e);
-                return ''; // Return empty string if parsing fails
+                return '';
             }
         }));
 
-        // Concatenate all message contents to form the complete response
         const totalResponse = messageEvents.join('');
 
         res.json({ text: totalResponse });
