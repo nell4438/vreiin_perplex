@@ -30,7 +30,7 @@ app.get('/message', async (req, res) => {
         });
 
         // Assuming the API returns a 'response' object with a 'text' property
-        const botResponse = response || 'Sorry, I did not receive a valid response from the Anakin API.';
+        const botResponse = response.data || 'Sorry, I did not receive a valid response from the Anakin API.';
 
         res.json({ text: botResponse });
     } catch (error) {
