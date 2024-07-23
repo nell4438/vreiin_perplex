@@ -5,27 +5,36 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+// No need for app.use(express.json()); since we're not expecting JSON in the body
 
-// Replace 'your_anakin_api_endpoint' with the actual Anakin API endpoint
+// Adjusted API endpoint to reflect the correct usage pattern
 const ANAKIN_API_ENDPOINT = `https://api.anakin.ai/v1/chatbots/${process.env.APP_ID}/messages`;
 
 app.get('/message', async (req, res) => {
-    const { message } = req.body;
-    res.send(message)
+    // Extract 'text' from query parameters, not body
+    const { text } = req.query;
+
+    if (!text) {
+        return res.status(400).json({ error: 'Missing "text" query parameter.' });
+    }
+
     try {
+        // Assuming the Anakin API expects a GET request with query parameters
+        // Note: This part of the code needs adjustment based on the actual API documentation
         const response = await axios.get(ANAKIN_API_ENDPOINT, {
-            app_id: process.env.APP_ID,
-            message: message.text,
-            access_token: process.env.API_ACCESS_TOKEN
+            params: {
+                app_id: process.env.APP_ID,
+                message: text,
+                access_token: process.env.API_ACCESS_TOKEN
+            }
         });
 
         // Assuming the API returns a 'response' object with a 'text' property
-        const botResponse = response.data.response;
+        const botResponse = response.data.response?.text || 'Sorry, I did not receive a valid response from the Anakin API.';
 
         res.json({ text: botResponse });
     } catch (error) {
-        console.error('Error calling Anakin API:', error);
+        console.error('Error calling Anakin API:', error.response?.data || error.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
