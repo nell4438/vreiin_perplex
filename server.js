@@ -23,7 +23,7 @@ app.get('/message', async (req, res) => {
         // Note: This part of the code needs adjustment based on the actual API documentation
         const response = await axios.get(ANAKIN_API_ENDPOINT, {
             params: {
-                app_id: '28737',
+                app_id: 28737,
                 message: text,
                 access_token: 'APS-sMS1h8HmNiJRG44lJJzLYvHWEY9CrkCj'
             }
