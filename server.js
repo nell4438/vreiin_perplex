@@ -12,8 +12,8 @@ app.use(express.json());
 const ANAKIN_API_ENDPOINT = `https://api.anakin.ai/v1/chatbots/${process.env.APP_ID}/messages`;
 
 app.post('/message', async (req, res) => {
-    // Extract 'text' from the request body
-    console.log(req.body); // Log the request body
+    // Extract 'content' from the request body
+    console.log(req.body); // Log the request body for debugging
 
     const { content } = req.body;
 
@@ -35,9 +35,30 @@ app.post('/message', async (req, res) => {
             }
         });
 
-        // Handle the response according to your needs
-        const botResponse = response.data || 'Sorry, I did not receive a valid response from the Anakin API.';
-        res.json({ text: botResponse });
+        // Assuming response.data contains the streamed events as a single string
+        const eventData = response.data;
+
+        // Split the response into individual lines/events
+        const events = eventData.split('\n');
+
+        // Filter out non-message events and extract content
+        const messageEvents = events.filter(line => line.startsWith('event: thread.message.delta').map(line => {
+            // Extract JSON part after "data: "
+            const jsonPart = line.split('data: ')[1];
+            try {
+                // Parse the JSON part to get content
+                const { content } = JSON.parse(jsonPart);
+                return content;
+            } catch (e) {
+                console.error('Error parsing event:', e);
+                return ''; // Return empty string if parsing fails
+            }
+        }));
+
+        // Concatenate all message contents to form the complete response
+        const totalResponse = messageEvents.join('');
+
+        res.json({ text: totalResponse });
     } catch (error) {
         console.error('Error calling Anakin API:', error.response?.data || error.message);
         res.status(500).json({ error: 'Internal Server Error' });
