@@ -13,6 +13,8 @@ const ANAKIN_API_ENDPOINT = `https://api.anakin.ai/v1/chatbots/${process.env.APP
 
 app.post('/message', async (req, res) => {
     // Extract 'text' from the request body
+    console.log(req.body); // Log the request body
+
     const { content } = req.body;
 
     if (!content) {
